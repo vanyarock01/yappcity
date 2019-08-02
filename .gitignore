@@ -1,2 +1,9 @@
 .venv
 __pycache__
+
+*.log
+
+# tarantool files
+*.snap
+*.xlog
+*.pid
