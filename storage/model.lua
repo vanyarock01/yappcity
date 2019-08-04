@@ -5,11 +5,13 @@ local citzen = {
         { 'town',        'string'   },
         { 'street',      'string'   },
         { 'building',    'string'   },
-        { 'appartement', 'unsigned' },
+        { 'apartment',   'unsigned' },
         { 'name',        'string'   },
-        { 'birth_date',  'string'   },
         { 'gender',      'string'   },
-        { 'relatives',   'array'    }
+        { 'relatives',   'array'    },
+        { 'birth_d',     'unsigned' },
+        { 'birth_m',     'unsigned' },
+        { 'birth_y',     'unsigned' }
     },
     indexes = {
         {
