@@ -27,6 +27,7 @@ schema = [
     }),
     ('gender', {
         'type': str,
+        'values': ['male', 'female'],
         'order': 6
     }),
     ('relatives', {
@@ -51,6 +52,32 @@ def date_validate(s):
         return True
 
 
+def citizen_validate(citizen, strict=True):
+    def types(t):
+        if not strict:
+            return (t, type(None))
+        else:
+            return (t)
+
+    for name, options in schema:
+        if citizen.get(name) is None:
+            if strict:
+                return False
+        else:
+            if name == 'relatives' and \
+                    not all(isinstance(n, int) for n in citizen.get('relatives')):
+                return False
+            elif name == 'birth_date' and \
+                    not date_validate(citizen.get('birth_date')):
+                return False
+            elif name == 'gender' and \
+                    citizen.get('gender') not in options['values']:
+                return False
+            elif not isinstance(citizen.get(name), types(options['type'])):
+                return False
+    return True
+
+
 def validate(data):
     """ data validation
 
@@ -62,15 +89,16 @@ def validate(data):
     """
 
     # check json structure
+
     if not isinstance(data.get('citizens'), list):
-        return 'invalid data format'
+        return False, 'invalid data format'
 
     # check citizens field types and collect relative
     relatives = {}
     for citizen in data['citizens']:
-        if all(isinstance(citizen.get(name), options['type']) for name, options in schema) and \
-                all(isinstance(n, int) for n in citizen.get('relatives')) and \
-                date_validate(citizen.get('birth_date')):
+        # if all(isinstance(citizen.get(name), options['type']) for name, options in schema) and \
+                # all(isinstance(n, int) for n in citizen.get('relatives')) and \
+        if citizen_validate(citizen):
             relatives[citizen['citizen_id']] = citizen['relatives']
         else:
             i = citizen.get('citizen_id')
