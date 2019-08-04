@@ -11,12 +11,15 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG)
 class SampleImport():
     def on_post(self, req, resp):
         posted_data = json.loads(req.stream.read())
-        if not posted_data:
+        # check json structure
+        if not posted_data or not isinstance(posted_data, dict) or \
+                posted_data.get('citizens') is None:
+        
             resp.status = falcon.HTTP_400
             resp.body = "empty data"
             return
 
-        valid, msg = utils.validate(posted_data)
+        valid, msg = utils.validate(posted_data['citizens'])
 
         if not valid:
             resp.status = falcon.HTTP_400
@@ -32,13 +35,24 @@ class SampleImport():
     def on_get(self, req, resp, import_id):
         ret = connection.call('sample_all', [import_id])
         formatted = utils.format_from(ret.data[0])
-        # logging.debug(formatted)
-        # logging.debug(type(formatted))
         resp.status = falcon.HTTP_201
         resp.body = json.dumps(formatted)
 
+
     def on_patch(self, req, resp, import_id, citizen_id):
         posted_data = json.loads(req.stream.read())
+
+        if not posted_data:
+            resp.status = falcon.HTTP_400
+            resp.body = "empty data"
+            return
+        valid = utils.citizen_validate(posted_data, update=True)
+
+        if not valid:
+            resp.status = falcon.HTTP_400
+        else:
+            resp.status = falcon.HTTP_201
+
 
 
 

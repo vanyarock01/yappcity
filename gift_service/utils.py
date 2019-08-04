@@ -3,6 +3,7 @@ from datetime import datetime
 schema = [
     ('citizen_id', {
         'type': int,
+        'primary': True,
         'order': 0
     }),
     ('town', {
@@ -52,19 +53,16 @@ def date_validate(s):
         return True
 
 
-def citizen_validate(citizen, strict=True):
-    def types(t):
-        if not strict:
-            return (t, type(None))
-        else:
-            return (t)
+def citizen_validate(citizen, update=False):
 
     for name, options in schema:
         if citizen.get(name) is None:
-            if strict:
+            if not update:
                 return False
         else:
-            if name == 'relatives' and \
+            if update and options.get('primary') == True:
+                return False
+            elif name == 'relatives' and \
                     not all(isinstance(n, int) for n in citizen.get('relatives')):
                 return False
             elif name == 'birth_date' and \
@@ -73,7 +71,7 @@ def citizen_validate(citizen, strict=True):
             elif name == 'gender' and \
                     citizen.get('gender') not in options['values']:
                 return False
-            elif not isinstance(citizen.get(name), types(options['type'])):
+            elif not isinstance(citizen.get(name), options['type']):
                 return False
     return True
 
@@ -90,14 +88,12 @@ def validate(data):
 
     # check json structure
 
-    if not isinstance(data.get('citizens'), list):
+    if not isinstance(data, list):
         return False, 'invalid data format'
 
     # check citizens field types and collect relative
     relatives = {}
-    for citizen in data['citizens']:
-        # if all(isinstance(citizen.get(name), options['type']) for name, options in schema) and \
-                # all(isinstance(n, int) for n in citizen.get('relatives')) and \
+    for citizen in data:
         if citizen_validate(citizen):
             relatives[citizen['citizen_id']] = citizen['relatives']
         else:
@@ -134,6 +130,16 @@ def format_to(data):
 
         result_data.append(note_citizen)
     return result_data
+
+
+def format_to_optional(data):
+    """format data to update citizen info
+    new format -> [['=', index, new_value], ...]
+    
+    """
+    result_data = []
+    for name, value in data:
+        pass
 
 
 def format_from(data):
