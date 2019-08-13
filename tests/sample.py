@@ -54,7 +54,8 @@ def create(k=1000):
 
     all_relatives = {i: set() for i in indexes}
     for i in indexes:
-        relative_count = random.randint(0, 2)
+        coef = random.randint(0, 10)
+        relative_count = 1 if coef == 1 else 0 
         relatives = set(random.choices(
             indexes[:i] + indexes[i:], k=relative_count))
         all_relatives[i] |= relatives
@@ -76,3 +77,4 @@ def create(k=1000):
 
 with open('sample.json', 'w') as f:
     f.write(json.dumps(create()))
+

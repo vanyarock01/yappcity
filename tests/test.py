@@ -6,20 +6,22 @@ import json
 import time
 
 
+def citizen_equivalent(x, y):
+    for k, v in x.items():
+        if k == 'relatives' and set(v) != set(y[k]):
+            return False
+        elif v != y[k]:
+            return False
+    return True
+
+
 def sample_equivalent(x, y):
     """ very slow dict compare """
 
     for c1 in x['citizens']:
         finded = False
         for c2 in y['citizens']:
-            ok = True
-            for k, v in c1.items():
-                if k == 'relatives' and set(v) != set(c2[k]):
-                    ok = False
-                elif v != c2[k]:
-                    ok = False
-            if ok:
-                finded = True
+            finded = finded or citizen_equivalent(c1, c2)
         if not finded:
             return False
     return True
@@ -121,11 +123,13 @@ def patch_test():
         data=json.dumps(
             {'citizens': [
                 {'citizen_id': 1, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
-                 'name': 'k', 'gender': 'female', 'relatives': [2, 3], 'birth_date': '20.04.1960'},
+                 'name': 'k', 'gender': 'female', 'relatives': [2, 3, 4], 'birth_date': '20.04.1960'},
                 {'citizen_id': 2, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
-                 'name': 'k', 'gender': 'female', 'relatives': [1], 'birth_date': '21.04.1960'},
+                 'name': 'k', 'gender': 'female', 'relatives': [1, 4], 'birth_date': '21.04.1960'},
                 {'citizen_id': 3, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
-                 'name': 'k', 'gender': 'female', 'relatives': [1], 'birth_date': '22.04.1960'}
+                 'name': 'k', 'gender': 'female', 'relatives': [1], 'birth_date': '22.04.1960'},
+                {'citizen_id': 4, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [1, 2], 'birth_date': '22.04.1960'}
             ]}
         ))
 
@@ -138,34 +142,61 @@ def patch_test():
 
     test_pack = []
     test_pack.append((
-        1,
         requests.patch,
         'optional validation',
         201,
-        {'town': 'm', 'building': 'n', 'apartment': 1,
-         'name': 'k', 'birth_date': '20.04.1960'}
+        1,
+        {'town': 'leon', 'building': 'new', 'apartment': 2,
+         'name': 'koko', 'birth_date': '21.05.1970'},
+        {'citizen_id': 1, 'street': 'n', 'town': 'leon', 'building': 'new', 'apartment': 2,
+         'name': 'koko', 'gender': 'female', 'relatives': [2, 3, 4], 'birth_date': '21.05.1970'}
     ))
 
     test_pack.append((
-        1,
         requests.patch,
         'optional validation with try update citzen_id',
         400,
+        2,
         {'citizen_id': 1, 'town': 'm', 'building': 'n', 'apartment': 1,
-         'name': 'k', 'birth_date': '20.04.1960'}
+         'name': 'k', 'birth_date': '20.04.1960'},
+        None
     ))
 
-    for i, method, msg, code, data in test_pack:
+    test_pack.append((
+        requests.patch,
+        'relative changing - insert',
+        201,
+        3,
+        {'relatives': [1, 2]},
+        {'citizen_id': 3, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [1, 2], 'birth_date': '22.04.1960'}
+    ))
+
+    test_pack.append((
+        requests.patch,
+        'relative changing - remove',
+        201,
+        4,
+        {'relatives': [1]},
+        {'citizen_id': 4, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [1], 'birth_date': '22.04.1960'}
+    ))
+
+    for method, msg, code, i, data, excepted in test_pack:
         resp_test = method(
             f'http://localhost:8000/imports/{import_id}/citizens/{i}', data=json.dumps(data))
         result = 'OK '
         if resp_test.status_code != code:
-            result = 'ERR'
-        print(f'{result} {resp_test.status_code} {msg} ')
+            result = 'ERR_CODE'
+        
+        if excepted and not citizen_equivalent(excepted, json.loads(resp_test.text)):
+            result = 'ERR_VAL'
+
+        print(f'{result} {resp_test.status_code} {msg}')
 
 
 def simple_test():
-    n = 100
+    n = 1000
     print(f'BEGIN simple test\nSAMPLE size={n}')
     data = sample.create(n)
 
@@ -174,7 +205,7 @@ def simple_test():
     resp_post = requests.post(
         'http://localhost:8000/imports', data=json.dumps(data))
     post_time = time.time() - start
-
+    print(post_time)
     if resp_post.status_code != 201:
         print(f'ERR {resp_post.status_code} {resp_post.text}')
         return

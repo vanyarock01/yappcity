@@ -1,5 +1,18 @@
 
 local citzen = {
+    pos = {
+        citizen_id = 1,
+        town       = 2,
+        street     = 3,
+        building   = 4,
+        apartment  = 5,
+        name       = 6,
+        gender     = 7,
+        relatives  = 8,
+        birth_d    = 9,
+        birth_m    = 10,
+        birth_y    = 11
+    },
     format = {
         { 'citizen_id',  'unsigned' },
         { 'town',        'string'   },
