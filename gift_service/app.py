@@ -99,11 +99,29 @@ class SampleImport():
                 'sample_update_citizens',
                 import_id,
                 data)
-            logging.info('UPDATED_CITIZEN')
-            logging.info(updated_citizen)
+
             resp.body = json.dumps(utils.format_citizen(updated_citizen))
             resp.status = falcon.HTTP_201
 
+
+class SampleBirthdays():
+    def on_get(self, req, resp, import_id):
+        status, raw_birtdays = tarantool_call('sample_birthdays', import_id)
+
+        # format data
+        new_birtdays = {}
+        for month, raw_data in raw_birtdays.items():
+            new_data = []
+            if len(raw_data) > 0:
+                for citizen_id, presents in raw_data.items():
+                    new_data.append({
+                        'citizen_id': citizen_id,
+                        'presents': presents
+                    })
+            new_birtdays[month] = new_data
+
+        resp.status = falcon.HTTP_201
+        resp.body = json.dumps({'data': new_birtdays})
 
 api = falcon.API()
 
@@ -112,3 +130,6 @@ sample_import = SampleImport()
 api.add_route('/imports', sample_import)
 api.add_route('/imports/{import_id}', sample_import)
 api.add_route('/imports/{import_id}/citizens/{citizen_id}', sample_import)
+
+sample_birtdays = SampleBirthdays()
+api.add_route('/imports/{import_id}/citizens/birthdays', sample_birtdays)

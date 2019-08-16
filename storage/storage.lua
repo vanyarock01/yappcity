@@ -79,6 +79,33 @@ function sample.citizen_with_relative(sample_id, citizen_id, new_relatives)
     return { citizen, citizen_relatives }
 end
 
+function sample.birthdays(sample_id)
+    local birth_data = {}
+    for month = 1, 12 do
+        
+        log.debug('month')
+        log.debug(month)
+
+        local month_data = {}
+        for _, tuple in
+                box.space[sample_id].index.birthdays:pairs({month}, {iterator='EQ'} ) do
+
+            for _, citzen_id in pairs(tuple[model.pos.relatives]) do
+                local citizen_id_str = tostring(citzen_id)
+                
+                if month_data[citizen_id_str] == nil then
+                    month_data[citizen_id_str] = 0
+                end
+
+                month_data[citizen_id_str] = month_data[citizen_id_str] + 1
+            end
+        end
+        birth_data[tostring(month)] = month_data
+    end
+    return birth_data
+end
+
+
 function sample.all(sample_id)
     local space_name = tostring(sample_id)
     -- TODO: remove this condition
@@ -110,6 +137,7 @@ local function init()
     rawset(_G, 'sample_all',                   sample.all)
     rawset(_G, 'sample_check',                 sample.check)
     rawset(_G, 'sample_citizen_with_relative', sample.citizen_with_relative)
+    rawset(_G, 'sample_birthdays',             sample.birthdays)
 
 end
 

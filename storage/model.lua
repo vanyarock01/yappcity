@@ -33,6 +33,14 @@ local citzen = {
                 type = 'HASH',
                 parts = {1, 'unsigned'}
             }
+        },
+        {
+            name = 'birthdays',
+            options = {
+                type = 'TREE',
+                unique = false,
+                parts = {10, 'unsigned'}
+            },
         }
     }
 }

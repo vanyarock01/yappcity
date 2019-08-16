@@ -2,29 +2,9 @@
 import collections
 import requests
 import sample
+import helper
 import json
 import time
-
-
-def citizen_equivalent(x, y):
-    for k, v in x.items():
-        if k == 'relatives' and set(v) != set(y[k]):
-            return False
-        elif v != y[k]:
-            return False
-    return True
-
-
-def sample_equivalent(x, y):
-    """ very slow dict compare """
-
-    for c1 in x['citizens']:
-        finded = False
-        for c2 in y['citizens']:
-            finded = finded or citizen_equivalent(c1, c2)
-        if not finded:
-            return False
-    return True
 
 
 def validation_test_pack():
@@ -189,10 +169,73 @@ def patch_test():
         if resp_test.status_code != code:
             result = 'ERR_CODE'
         
-        if excepted and not citizen_equivalent(excepted, json.loads(resp_test.text)):
+        if excepted and not helper.citizen_equivalent(excepted, json.loads(resp_test.text)):
             result = 'ERR_VAL'
 
         print(f'{result} {resp_test.status_code} {msg}')
+
+
+def birtdays_test():
+    print('BEGIN birthdays tests')
+    resp_post = requests.post(
+        'http://localhost:8000/imports',
+        data=json.dumps(
+            {'citizens': [
+                {'citizen_id': 1, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [], 'birth_date': '20.01.1960'},
+                {'citizen_id': 2, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [3], 'birth_date': '21.02.1960'},
+                {'citizen_id': 3, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [2, 6], 'birth_date': '22.03.1960'},
+                {'citizen_id': 4, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [5], 'birth_date': '22.04.1960'},
+                {'citizen_id': 5, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [4, 11, 9], 'birth_date': '22.05.1960'},
+                {'citizen_id': 6, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [3], 'birth_date': '22.06.1960'},
+                {'citizen_id': 7, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [], 'birth_date': '22.04.1960'},
+                {'citizen_id': 8, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [9], 'birth_date': '22.03.1960'},
+                {'citizen_id': 9, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [5, 8, 10], 'birth_date': '22.03.1960'},
+                {'citizen_id': 10, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [9, 11], 'birth_date': '22.08.1960'},
+                {'citizen_id': 11, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,
+                 'name': 's', 'gender': 'female', 'relatives': [5, 10], 'birth_date': '22.03.1960'}
+            ]}
+        ))
+
+    excepted = {
+        '1': {},
+        '2': { '3': 1 },
+        '3': { '2': 1, '6': 1, '9': 1, '5': 2, '10': 2, '8': 1 },
+        '4': { '5': 1 },
+        '5': { '4': 1,  '11': 1, '9': 1 },
+        '6': { '3': 1 },
+        '7': {},
+        '8': { '9': 1, '11': 1},
+        '9': {},
+        '10': {},
+        '11': {},
+        '12': {} 
+    }
+    import_id = json.loads(resp_post.text)['import_id']
+    resp_get = requests.get(f'http://localhost:8000/imports/{import_id}/citizens/birthdays')
+
+    if resp_get.status_code != 201:
+        print('ERR')
+
+    birtdays = json.loads(resp_get.text)['data']
+    for month, data in birtdays.items():
+        if len(data) != len(excepted[month]):
+            print('ERR')
+            return 
+        for item in data:
+            if excepted[month][str(item["citizen_id"])] != item["presents"]:
+                print('ERR')
+                return
+    print(f'OK  {resp_get.status_code} just ok')
 
 
 def simple_test():
@@ -220,7 +263,7 @@ def simple_test():
         return
 
     returned_data = json.loads(resp_get.text)
-    if not sample_equivalent(data, returned_data):
+    if not helper.sample_equivalent(data, returned_data):
         print('ERR --- posted and getted samples not equivalent')
     else:
         print('OK ---')
@@ -232,3 +275,5 @@ if __name__ == '__main__':
     validation_test_pack()
     print()
     patch_test()
+    print()
+    birtdays_test()
