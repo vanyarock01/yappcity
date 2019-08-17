@@ -23,7 +23,7 @@ def test_post_get(import_data):
     
     # try GET data
     resp_get = requests.get(
-        f'{host}/imports/{import_id}')
+        f'{host}/imports/{import_id}', timeout=10.0)
     assert resp_get.status_code == 201
 
     resp_data = json.loads(resp_get.text)
