@@ -39,7 +39,7 @@ def create_citzen(i, relatives):
 
     day = random.randint(1, 25)
     month = random.randint(1, 12)
-    year = random.randint(1950, 2019)
+    year = random.randint(1950, 2018)
 
     citzen['birth_date'] = '{:02d}.{:02d}.{}'.format(day, month, year)
     citzen['gender'] = gender

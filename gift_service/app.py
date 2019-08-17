@@ -123,6 +123,20 @@ class SampleBirthdays():
         resp.status = falcon.HTTP_201
         resp.body = json.dumps({'data': new_birtdays})
 
+
+class SampleTownsAges():
+    def on_get(self, req, resp, import_id):
+        status, towns_stat = tarantool_call('sample_towns_ages', import_id)
+        towns_percentiles = []
+        
+        for town, ages in towns_stat.items():
+            stat = utils.percentiles(ages, [50, 75, 99])
+            stat['town'] = town
+            towns_percentiles.append(stat)
+        
+        resp.status = falcon.HTTP_201
+        resp.body = json.dumps({'data': towns_percentiles})
+
 api = falcon.API()
 
 sample_import = SampleImport()
@@ -133,3 +147,6 @@ api.add_route('/imports/{import_id}/citizens/{citizen_id}', sample_import)
 
 sample_birtdays = SampleBirthdays()
 api.add_route('/imports/{import_id}/citizens/birthdays', sample_birtdays)
+
+sample_towns_ages = SampleTownsAges()
+api.add_route('/imports/{import_id}/towns/stat/percentile/age', sample_towns_ages)

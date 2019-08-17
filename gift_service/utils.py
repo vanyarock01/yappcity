@@ -1,4 +1,5 @@
 from datetime import datetime
+import numpy as np
 
 schema = {
     'citizen_id': {
@@ -217,3 +218,9 @@ def format_citizen(raw):
         else:
             dict_citizen[name] = raw[options['order']]
     return dict_citizen
+
+def percentiles(data, p):
+    result = {}
+    for val in p:
+        result['p' + str(val)] = int(np.percentile(np.array(data), val))
+    return result

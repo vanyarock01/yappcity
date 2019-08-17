@@ -106,6 +106,36 @@ function sample.birthdays(sample_id)
 end
 
 
+function sample.towns_ages(sample_id)
+    local cur_date = os.date("*t")
+    
+    local get_age = function(day, month, year)
+        local age = cur_date.year - year
+        if month > cur_date.month or
+                month == cur_date.month and day > cur_date.day then
+            age = age - 1
+        end
+
+        return age
+    end
+
+    local town_data = {}
+    for _, tuple in box.space[sample_id]:pairs() do
+        local town = tuple[model.pos.town]
+        if town_data[town] == nil then
+            town_data[town] = {}
+        end
+        local age = get_age(
+            tuple[model.pos.birth_d],
+            tuple[model.pos.birth_m],
+            tuple[model.pos.birth_y])
+
+        table.insert(town_data[town], age)
+    end
+
+    return town_data
+end
+
 function sample.all(sample_id)
     local space_name = tostring(sample_id)
     -- TODO: remove this condition
@@ -138,6 +168,7 @@ local function init()
     rawset(_G, 'sample_check',                 sample.check)
     rawset(_G, 'sample_citizen_with_relative', sample.citizen_with_relative)
     rawset(_G, 'sample_birthdays',             sample.birthdays)
+    rawset(_G, 'sample_towns_ages',            sample.towns_ages)
 
 end
 
