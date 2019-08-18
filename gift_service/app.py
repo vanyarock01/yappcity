@@ -26,7 +26,7 @@ def tarantool_call(function_name, *args):
     return status, data
 
 
-class SampleImport():
+class Import():
     def on_post(self, req, resp):
         posted_data = json.loads(req.stream.read())
 
@@ -41,7 +41,7 @@ class SampleImport():
             return
 
         formatted = utils.format_to(posted_data)
-        status, ret = tarantool_call('sample_create', formatted)
+        status, ret = tarantool_call('import_create', formatted)
 
         if not status:
             resp.status = falcon.HTTP_500
@@ -57,7 +57,7 @@ class SampleImport():
 
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, raw_citizens = tarantool_call('sample_all', import_id)
+        status, raw_citizens = tarantool_call('import_all', import_id)
         if not status:
             resp.status = falcon.HTTP_500
             resp.body = raw_citizens
@@ -91,7 +91,7 @@ class SampleImport():
 
         if posted_data.get('relatives'):
             status, citizen_pack = tarantool_call(
-                'sample_citizen_with_relative',
+                'import_citizen_with_relative',
                 import_id,
                 citizen_id,
                 posted_data['relatives'])
@@ -112,7 +112,7 @@ class SampleImport():
 
         data += relative_data
         status, updated_citizen = tarantool_call(
-            'sample_update_citizens',
+            'import_update_citizens',
             import_id,
             data)
 
@@ -127,10 +127,10 @@ class SampleImport():
         })
 
 
-class SampleBirthdays():
+class ImportBirthdays():
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, raw_birtdays = tarantool_call('sample_birthdays', import_id)
+        status, raw_birtdays = tarantool_call('import_birthdays', import_id)
 
         if not status:
             resp.status = falcon.HTTP_500
@@ -157,10 +157,10 @@ class SampleBirthdays():
         })
 
 
-class SampleTownsAges():
+class ImportTownsAges():
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, towns_stat = tarantool_call('sample_towns_ages', import_id)
+        status, towns_stat = tarantool_call('import_towns_ages', import_id)
 
         if not status:
             resp.status = falcon.HTTP_500
@@ -182,14 +182,14 @@ class SampleTownsAges():
 
 api = falcon.API()
 
-sample_import = SampleImport()
+import_class = Import()
 
-api.add_route('/imports', sample_import)
-api.add_route('/imports/{import_id}/citizens', sample_import)
-api.add_route('/imports/{import_id}/citizens/{citizen_id}', sample_import)
+api.add_route('/imports', import_class)
+api.add_route('/imports/{import_id}/citizens', import_class)
+api.add_route('/imports/{import_id}/citizens/{citizen_id}', import_class)
 
-sample_birtdays = SampleBirthdays()
-api.add_route('/imports/{import_id}/citizens/birthdays', sample_birtdays)
+birtdays_class = ImportBirthdays()
+api.add_route('/imports/{import_id}/citizens/birthdays', birtdays_class)
 
-sample_towns_ages = SampleTownsAges()
-api.add_route('/imports/{import_id}/towns/stat/percentile/age', sample_towns_ages)
+towns_ages_class = ImportTownsAges()
+api.add_route('/imports/{import_id}/towns/stat/percentile/age', towns_ages_class)

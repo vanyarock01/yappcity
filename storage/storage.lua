@@ -16,9 +16,9 @@ function array_contains(array, value, key)
     return false
 end
 
-local sample = {}
+local import = {}
 
-function sample.check(name)
+function import.check(name)
     if box.space[name] == nil then
         return false
     else
@@ -26,7 +26,7 @@ function sample.check(name)
     end
 end
 
-function sample.create(data)
+function import.create(data)
     local id = box.sequence.counter:next()
     local space_name = tostring(id)
 
@@ -43,24 +43,24 @@ function sample.create(data)
     return id
 end
 
-function sample.update_citizens(sample_id, citizen_pack)
+function import.update_citizens(import_id, citizen_pack)
     -- return info about first citizen
     local citizen = citizen_pack[1]
-    local updated_citizen = box.space[sample_id]:update(citizen[1], citizen[2])
+    local updated_citizen = box.space[import_id]:update(citizen[1], citizen[2])
     -- update relative citizens, if exist
     for i = 2, #citizen_pack do
         citizen = citizen_pack[i]
-        box.space[sample_id]:update(citizen[1], citizen[2])
+        box.space[import_id]:update(citizen[1], citizen[2])
     end
     return updated_citizen
 end
 
-function sample.citizen_with_relative(sample_id, citizen_id, new_relatives)
+function import.citizen_with_relative(import_id, citizen_id, new_relatives)
     -- return table - {citizen data, relatives data}
-    local space_name = tostring(sample_id)
+    local space_name = tostring(import_id)
 
     -- TODO: remove this condition
-    if not sample.check(space_name) then
+    if not import.check(space_name) then
         return false
     end
     local citizen = box.space[space_name]:get(citizen_id)
@@ -79,7 +79,7 @@ function sample.citizen_with_relative(sample_id, citizen_id, new_relatives)
     return { citizen, citizen_relatives }
 end
 
-function sample.birthdays(sample_id)
+function import.birthdays(import_id)
     local birth_data = {}
     for month = 1, 12 do
         
@@ -88,7 +88,7 @@ function sample.birthdays(sample_id)
 
         local month_data = {}
         for _, tuple in
-                box.space[sample_id].index.birthdays:pairs({month}, {iterator='EQ'} ) do
+                box.space[import_id].index.birthdays:pairs({month}, {iterator='EQ'} ) do
 
             for _, citzen_id in pairs(tuple[model.pos.relatives]) do
                 local citizen_id_str = tostring(citzen_id)
@@ -106,7 +106,7 @@ function sample.birthdays(sample_id)
 end
 
 
-function sample.towns_ages(sample_id)
+function import.towns_ages(import_id)
     local cur_date = os.date("*t")
     
     local get_age = function(day, month, year)
@@ -120,7 +120,7 @@ function sample.towns_ages(sample_id)
     end
 
     local town_data = {}
-    for _, tuple in box.space[sample_id]:pairs() do
+    for _, tuple in box.space[import_id]:pairs() do
         local town = tuple[model.pos.town]
         if town_data[town] == nil then
             town_data[town] = {}
@@ -136,22 +136,22 @@ function sample.towns_ages(sample_id)
     return town_data
 end
 
-function sample.all(sample_id)
-    local space_name = tostring(sample_id)
+function import.all(import_id)
+    local space_name = tostring(import_id)
     -- TODO: remove this condition
-    if not sample.check(space_name) then
+    if not import.check(space_name) then
         return false
     end
 
-    local sample = {}
+    local import = {}
     
     for _, tuple in
         box.space[space_name].index.primary:pairs(nil, {
             iterator = box.index.ALL}) do
 
-        table.insert(sample, tuple:totable())
+        table.insert(import, tuple:totable())
     end
-    return sample
+    return import
 end
 
 local function init()
@@ -162,13 +162,13 @@ local function init()
 
     box.schema.sequence.create('counter', { min = 0, start = 0 })
 
-    rawset(_G, 'sample_create',                sample.create)
-    rawset(_G, 'sample_update_citizens',       sample.update_citizens)
-    rawset(_G, 'sample_all',                   sample.all)
-    rawset(_G, 'sample_check',                 sample.check)
-    rawset(_G, 'sample_citizen_with_relative', sample.citizen_with_relative)
-    rawset(_G, 'sample_birthdays',             sample.birthdays)
-    rawset(_G, 'sample_towns_ages',            sample.towns_ages)
+    rawset(_G, 'import_create',                import.create)
+    rawset(_G, 'import_update_citizens',       import.update_citizens)
+    rawset(_G, 'import_all',                   import.all)
+    rawset(_G, 'import_check',                 import.check)
+    rawset(_G, 'import_citizen_with_relative', import.citizen_with_relative)
+    rawset(_G, 'import_birthdays',             import.birthdays)
+    rawset(_G, 'import_towns_ages',            import.towns_ages)
 
 end
 
