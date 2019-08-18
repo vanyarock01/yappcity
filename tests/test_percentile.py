@@ -78,7 +78,7 @@ def post_data():
 
     resp_post = requests.post(
         f'{host}/imports', data=json.dumps(data), timeout=10)
-    return data, json.loads(resp_post.text)
+    return data, json.loads(resp_post.text)['data']
 
 
 def test_percentile(post_data):
@@ -88,7 +88,7 @@ def test_percentile(post_data):
     import_id = post_data[1]['import_id']
     resp_get = requests.get(
         f'{host}/imports/{import_id}/towns/stat/percentile/age', timeout=10)
-    assert resp_get.status_code == 201
+    assert resp_get.status_code == 200
 
     data = json.loads(resp_get.text)['data']
     for town_stat in data:

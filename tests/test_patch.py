@@ -24,7 +24,7 @@ def post_data():
         ),
         timeout=10)
 
-    return json.loads(resp_post.text)
+    return json.loads(resp_post.text)['data']
 
 
 def test_invalid(post_data):
@@ -51,7 +51,7 @@ def test_patch(post_data):
         f'{host}/imports/{post_data["import_id"]}/citizens/1',
         data=json.dumps(patch_data), timeout=10)
 
-    assert resp_patch.status_code == 201, 'patch 1 citizen'
+    assert resp_patch.status_code == 200, 'patch 1 citizen'
 
     excepted_first = {
         'citizen_id': 1,
@@ -65,7 +65,7 @@ def test_patch(post_data):
         'birth_date': '21.05.1970'
     }
     assert helper.citizen_equivalent(
-        excepted_first, json.loads(resp_patch.text)) == True, 'patch citizen data'
+        excepted_first, json.loads(resp_patch.text)['data']) == True, 'patch citizen data'
 
     # patch citizen with relatives
 
@@ -76,7 +76,7 @@ def test_patch(post_data):
     resp_patch = requests.patch(
         f'{host}/imports/{post_data["import_id"]}/citizens/3',
         data=json.dumps(insert_relatives), timeout=10)
-    assert resp_patch.status_code == 201, 'add citizen with id == 2 to relatives citizen with id == 3'
+    assert resp_patch.status_code == 200, 'add citizen with id == 2 to relatives citizen with id == 3'
 
     excepted_third = {
         'citizen_id': 3,
@@ -90,7 +90,7 @@ def test_patch(post_data):
         'birth_date': '22.04.1960'
     }
     assert helper.citizen_equivalent(
-        excepted_third, json.loads(resp_patch.text)) == True, 'insert relatives'
+        excepted_third, json.loads(resp_patch.text)['data']) == True, 'insert relatives'
 
     remove_relatives = {
         'relatives': [1]
@@ -99,7 +99,7 @@ def test_patch(post_data):
     resp_patch = requests.patch(
         f'{host}/imports/{post_data["import_id"]}/citizens/4',
         data=json.dumps(remove_relatives), timeout=10)
-    assert resp_patch.status_code == 201, 'remove citizen with id == 2 to relatives citizen with id == 4'
+    assert resp_patch.status_code == 200, 'remove citizen with id == 2 to relatives citizen with id == 4'
 
     excepted_fourth = {
         'citizen_id': 4,
@@ -113,13 +113,13 @@ def test_patch(post_data):
         'birth_date': '22.04.1960'
     }
     assert helper.citizen_equivalent(
-        excepted_fourth, json.loads(resp_patch.text)) == True, 'remove relatives'
+        excepted_fourth, json.loads(resp_patch.text)['data']) == True, 'remove relatives'
 
     # compare all sample with excepted
 
     resp_get = requests.get(
-        f'{host}/imports/{post_data["import_id"]}', timeout=10)
-    assert resp_get.status_code == 201
+        f'{host}/imports/{post_data["import_id"]}/citizens', timeout=10)
+    assert resp_get.status_code == 200
 
     excepted_second = {
         'citizen_id': 2,
@@ -133,14 +133,12 @@ def test_patch(post_data):
         'birth_date': '21.04.1960'
     }
 
-    excepted_sample = {
-        'citizens': [
-            excepted_first,
-            excepted_second,
-            excepted_third,
-            excepted_fourth
-        ]
-    }
+    excepted_sample = [
+        excepted_first,
+        excepted_second,
+        excepted_third,
+        excepted_fourth
+    ]
 
     assert helper.sample_equivalent(
-        json.loads(resp_get.text), excepted_sample) == True, 'compare all sample with excepted'
+        json.loads(resp_get.text)['data'], excepted_sample) == True, 'compare all sample with excepted'

@@ -76,7 +76,7 @@ def post_data():
         citizen['gender'] = 'female'
 
     resp_post = requests.post(f'{host}/imports', data=json.dumps(data), timeout=10)
-    return json.loads(resp_post.text)
+    return json.loads(resp_post.text)['data']
 
 def test_birthdays(post_data):
     excepted = {
@@ -116,7 +116,7 @@ def test_birthdays(post_data):
 
     import_id = post_data['import_id']
     resp_get = requests.get(f'{host}/imports/{import_id}/citizens/birthdays', timeout=10)
-    assert resp_get.status_code == 201
+    assert resp_get.status_code == 200
 
     birtdays = json.loads(resp_get.text)['data']
     for month, data in birtdays.items():

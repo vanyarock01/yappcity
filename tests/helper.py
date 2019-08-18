@@ -14,9 +14,9 @@ def citizen_equivalent(x, y):
 def sample_equivalent(x, y):
     """ very slow dict compare """
 
-    for c1 in x['citizens']:
+    for c1 in x:
         finded = False
-        for c2 in y['citizens']:
+        for c2 in y:
             finded = finded or citizen_equivalent(c1, c2)
         if not finded:
             return False

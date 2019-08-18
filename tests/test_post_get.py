@@ -15,16 +15,19 @@ def import_data():
 def test_post_get(import_data):
     # try POST data
     resp_post = requests.post(
-        f'{host}/imports', data=json.dumps(import_data), timeout=10.0)
+        f'{host}/imports', data=json.dumps({
+            'citizens': import_data
+        }), timeout=10.0)
+
     assert resp_post.status_code == 201
 
-    import_id = json.loads(resp_post.text)['import_id']
+    import_id = json.loads(resp_post.text)['data']['import_id']
     assert isinstance(import_id, int) == True
-    
+
     # try GET data
     resp_get = requests.get(
-        f'{host}/imports/{import_id}', timeout=10.0)
-    assert resp_get.status_code == 201
+        f'{host}/imports/{import_id}/citizens', timeout=10.0)
+    assert resp_get.status_code == 200
 
     resp_data = json.loads(resp_get.text)
-    assert helper.sample_equivalent(resp_data, import_data)
+    assert helper.sample_equivalent(resp_data['data'], import_data)

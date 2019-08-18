@@ -67,12 +67,11 @@ def create(k=1000):
         print('Incorrect generation relatives')
 
     citizens = []
-    sample = {'citizens': citizens}
 
     for i, relatives in all_relatives.items():
         citizens.append(create_citzen(i, relatives))
 
-    return sample
+    return citizens
 
 
 with open('sample.json', 'w') as f:
