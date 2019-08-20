@@ -9,21 +9,17 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG)
 
 
 def tarantool_call(function_name, *args):
-    try:
-        # the connection.call puts the result in the "data" field
-        # and in the list (why didn’t I find out so)
-        data = connection.call(function_name, args).data[0]
-        status = True
-    except Exception as e:
-        status, data = False, str(e)
+    # the connection.call puts the result in the "data" field
+    # and in the list (why didn’t I find out so)
+    data = connection.call(function_name, args).data[0]
 
-    logging.debug(f"TARANTOOL call, function={function_name}, status={status}")
+    logging.debug(f"TARANTOOL call, function={function_name}")
     logging.debug('args')
     logging.debug(args)
     logging.debug('data')
     logging.debug(data)
 
-    return status, data
+    return data
 
 
 class Import():
@@ -41,12 +37,8 @@ class Import():
             return
 
         formatted = utils.format_to(posted_data)
-        status, ret = tarantool_call('import_create', formatted)
+        ret = tarantool_call('import_create', formatted)
 
-        if not status:
-            resp.status = falcon.HTTP_500
-            resp.body = ret
-            return
 
         resp.status = falcon.HTTP_201
         resp.body = json.dumps({
@@ -57,11 +49,7 @@ class Import():
 
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, raw_citizens = tarantool_call('import_all', import_id)
-        if not status:
-            resp.status = falcon.HTTP_500
-            resp.body = raw_citizens
-            return
+        raw_citizens = tarantool_call('import_all', import_id)
 
         form_citizens = []
         for citizen in raw_citizens:
@@ -90,16 +78,11 @@ class Import():
         data.append(citizen_data)
 
         if posted_data.get('relatives'):
-            status, citizen_pack = tarantool_call(
+            citizen_pack = tarantool_call(
                 'import_citizen_with_relative',
                 import_id,
                 citizen_id,
                 posted_data['relatives'])
-
-            if not status:
-                resp.status = falcon.HTTP_500
-                resp.body = citizen_pack
-                return
 
             relative_data = utils.relative_data_shaper(
                 citizen_id=citizen_id,
@@ -111,15 +94,10 @@ class Import():
             relative_data = []
 
         data += relative_data
-        status, updated_citizen = tarantool_call(
+        updated_citizen = tarantool_call(
             'import_update_citizens',
             import_id,
             data)
-
-        if not status:
-            resp.status = falcon.HTTP_500
-            resp.body = updated_citizen
-            return
 
         resp.status = falcon.HTTP_200
         resp.body = json.dumps({
@@ -130,12 +108,7 @@ class Import():
 class ImportBirthdays():
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, raw_birtdays = tarantool_call('import_birthdays', import_id)
-
-        if not status:
-            resp.status = falcon.HTTP_500
-            resp.body = raw_birtdays
-            return
+        raw_birtdays = tarantool_call('import_birthdays', import_id)
 
         # format data
         new_birtdays = {}
@@ -160,12 +133,7 @@ class ImportBirthdays():
 class ImportTownsAges():
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
-        status, towns_stat = tarantool_call('import_towns_ages', import_id)
-
-        if not status:
-            resp.status = falcon.HTTP_500
-            resp.body = raw_birtdays
-            return
+        towns_stat = tarantool_call('import_towns_ages', import_id)
 
         towns_percentiles = []
 

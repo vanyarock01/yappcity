@@ -54,6 +54,16 @@ def invalid_data():
                  'name': 's', 'gender': 'female', 'relatives': [], 'birth_date': '21.04.1960'}
             ]}
         ), (
+            'Repeated citizen_id',
+            {'citizens': [
+                {'citizen_id': 1, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [], 'birth_date': '20.04.1960'},
+                {'citizen_id': 2, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [], 'birth_date': '21.04.1960'},
+                {'citizen_id': 2, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
+                 'name': 'k', 'gender': 'female', 'relatives': [], 'birth_date': '22.04.1960'}
+            ]}
+        ), (
             'invalid relatives',
             {'citizens': [
                 {'citizen_id': 1, 'street': 's', 'town': 's', 'building': 's', 'apartment': 1,

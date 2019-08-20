@@ -92,13 +92,13 @@ def validate(data):
 
     # check citizens field types and collect relative
     relatives = {}
-    for citizen in data:
-        if citizen_validate(citizen):
-            relatives[citizen['citizen_id']] = citizen['relatives']
-        else:
-            i = citizen.get('citizen_id')
-            return False, f'invalid citizen format id {str(i)}'
 
+    for citizen in data:
+        i = citizen.get('citizen_id')
+        if relatives.get(i) == None and citizen_validate(citizen):
+            relatives[i] = citizen['relatives']
+        else:
+            return False, f'invalid citizen format id {str(i)}'
     # check relatives
     for i, rel in relatives.items():
         for r in rel:
