@@ -2,6 +2,7 @@ import tarantool
 import logging
 import falcon
 import utils
+import mware
 import json
 
 connection = tarantool.connect(host='localhost', port=3331)
@@ -24,8 +25,7 @@ def tarantool_call(function_name, *args):
 
 class Import():
     def on_post(self, req, resp):
-        posted_data = json.loads(req.stream.read())
-
+        posted_data = req.context['request']
         if not posted_data or not isinstance(posted_data, dict) or \
                 posted_data.get('citizens') is None:
             resp.status = falcon.HTTP_400
@@ -41,11 +41,9 @@ class Import():
 
 
         resp.status = falcon.HTTP_201
-        resp.body = json.dumps({
-            'data': {
-                'import_id': ret
-            }
-        })
+        resp.context['response'] = {
+            'import_id': ret
+        }
 
     def on_get(self, req, resp, import_id):
         #TODO: if import dont exist - 400: bad request
@@ -56,18 +54,13 @@ class Import():
             form_citizens.append(utils.format_citizen(citizen))
 
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps({
-            'data': form_citizens
-        })
+        resp.context['response'] = form_citizens
+
 
     def on_patch(self, req, resp, import_id, citizen_id):
-        try:
-            citizen_id = int(citizen_id)
-            posted_data = json.loads(req.stream.read())
-            valid = utils.citizen_validate(posted_data, update=True)
-        except:
-            resp.status = falcon.HTTP_400
-            return
+        posted_data = req.context['request']
+
+        valid = utils.citizen_validate(posted_data, update=True)
 
         if not valid:
             resp.status = falcon.HTTP_400
@@ -100,9 +93,7 @@ class Import():
             data)
 
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps({
-            'data': utils.format_citizen(updated_citizen)
-        })
+        resp.context['response'] = utils.format_citizen(updated_citizen)
 
 
 class ImportBirthdays():
@@ -125,9 +116,7 @@ class ImportBirthdays():
             new_birtdays[month] = new_data
 
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps({
-            'data': new_birtdays
-        })
+        resp.context['response'] = new_birtdays
 
 
 class ImportTownsAges():
@@ -143,21 +132,21 @@ class ImportTownsAges():
             towns_percentiles.append(stat)
 
         resp.status = falcon.HTTP_200
-        resp.body = json.dumps({
-            'data': towns_percentiles
-        })
+        resp.context['response'] = towns_percentiles
 
 
-api = falcon.API()
+api = falcon.API(middleware=[
+    mware.JSONprocess(),
+])
 
 import_class = Import()
 
 api.add_route('/imports', import_class)
-api.add_route('/imports/{import_id}/citizens', import_class)
-api.add_route('/imports/{import_id}/citizens/{citizen_id}', import_class)
+api.add_route('/imports/{import_id:int(min=0)}/citizens', import_class)
+api.add_route('/imports/{import_id:int(min=0)}/citizens/{citizen_id:int(min=0)}', import_class)
 
 birtdays_class = ImportBirthdays()
-api.add_route('/imports/{import_id}/citizens/birthdays', birtdays_class)
+api.add_route('/imports/{import_id:int(min=0)}/citizens/birthdays', birtdays_class)
 
 towns_ages_class = ImportTownsAges()
-api.add_route('/imports/{import_id}/towns/stat/percentile/age', towns_ages_class)
+api.add_route('/imports/{import_id:int(min=0)}/towns/stat/percentile/age', towns_ages_class)

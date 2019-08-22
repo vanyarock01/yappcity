@@ -36,43 +36,44 @@ function import.create(data)
     end
 
     for _, citzen in pairs(data) do
-        log.info(tostring(citzen))
         space:insert { unpack(citzen) }
     end
 
     return id
 end
 
+local function space_by_import_id(import_id)
+    return box.space[tostring(import_id)]
+end
+
 function import.update_citizens(import_id, citizen_pack)
     -- return info about first citizen
+    local import_space = space_by_import_id(import_id)
+
     local citizen = citizen_pack[1]
-    local updated_citizen = box.space[import_id]:update(citizen[1], citizen[2])
+    local updated_citizen = import_space:update(citizen[1], citizen[2])
     -- update relative citizens, if exist
     for i = 2, #citizen_pack do
         citizen = citizen_pack[i]
-        box.space[import_id]:update(citizen[1], citizen[2])
+        import_space:update(citizen[1], citizen[2])
     end
     return updated_citizen
 end
 
 function import.citizen_with_relative(import_id, citizen_id, new_relatives)
     -- return table - {citizen data, relatives data}
-    local space_name = tostring(import_id)
+    local import_space = space_by_import_id(import_id)
 
-    -- TODO: remove this condition
-    if not import.check(space_name) then
-        return false
-    end
-    local citizen = box.space[space_name]:get(citizen_id)
+    local citizen = import_space:get(citizen_id)
     -- collecting and inserting relatives data
     local citizen_relatives = {}
     for _, i in pairs(citizen[model.pos.relatives]) do
-        table.insert(citizen_relatives, box.space[space_name]:get(i))
+        table.insert(citizen_relatives, import_space:get(i))
     end
     -- collecting new relaties data
     for _, i in pairs(new_relatives) do
         if not array_contains(citizen[model.pos.relatives], i) then
-            table.insert(citizen_relatives, box.space[space_name]:get(i))
+            table.insert(citizen_relatives, import_space:get(i))
         end
     end
 
@@ -80,15 +81,14 @@ function import.citizen_with_relative(import_id, citizen_id, new_relatives)
 end
 
 function import.birthdays(import_id)
+    local import_space = space_by_import_id(import_id)
+
     local birth_data = {}
     for month = 1, 12 do
-        
-        log.debug('month')
-        log.debug(month)
 
         local month_data = {}
         for _, tuple in
-                box.space[import_id].index.birthdays:pairs({month}, {iterator='EQ'} ) do
+                import_space.index.birthdays:pairs({month}, {iterator='EQ'} ) do
 
             for _, citzen_id in pairs(tuple[model.pos.relatives]) do
                 local citizen_id_str = tostring(citzen_id)
@@ -107,6 +107,8 @@ end
 
 
 function import.towns_ages(import_id)
+    local import_space = space_by_import_id(import_id)
+
     local cur_date = os.date("*t")
     
     local get_age = function(day, month, year)
@@ -120,7 +122,7 @@ function import.towns_ages(import_id)
     end
 
     local town_data = {}
-    for _, tuple in box.space[import_id]:pairs() do
+    for _, tuple in import_space:pairs() do
         local town = tuple[model.pos.town]
         if town_data[town] == nil then
             town_data[town] = {}
@@ -137,16 +139,12 @@ function import.towns_ages(import_id)
 end
 
 function import.all(import_id)
-    local space_name = tostring(import_id)
-    -- TODO: remove this condition
-    if not import.check(space_name) then
-        return false
-    end
+    local import_space = space_by_import_id(import_id)
 
     local import = {}
     
     for _, tuple in
-        box.space[space_name].index.primary:pairs(nil, {
+        import_space.index.primary:pairs(nil, {
             iterator = box.index.ALL}) do
 
         table.insert(import, tuple:totable())
