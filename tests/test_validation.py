@@ -36,12 +36,6 @@ def invalid_data():
     future_date = f"{today.day}.{today.month}.{today.year + 1}"
     return [
         (
-            'empty',
-            {}
-        ), (
-            'empty citizen list',
-            {'citizen': []}
-        ), (
             'missing field town',
             {'citizens': [
                 {'citizen_id': 1, 'street': 's', 'building': 's', 'apartment': 1,

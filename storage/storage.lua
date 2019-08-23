@@ -18,13 +18,7 @@ end
 
 local import = {}
 
-function import.check(name)
-    if box.space[name] == nil then
-        return false
-    else
-        return true
-    end
-end
+
 
 function import.create(data)
     local id = box.sequence.counter:next()
@@ -49,6 +43,10 @@ end
 function import.update_citizens(import_id, citizen_pack)
     -- return info about first citizen
     local import_space = space_by_import_id(import_id)
+    
+    if import_space == nil then
+        return nil
+    end
 
     local citizen = citizen_pack[1]
     local updated_citizen = import_space:update(citizen[1], citizen[2])
@@ -63,6 +61,10 @@ end
 function import.citizen_with_relative(import_id, citizen_id, new_relatives)
     -- return table - {citizen data, relatives data}
     local import_space = space_by_import_id(import_id)
+
+    if import_space == nil then
+        return nil
+    end
 
     local citizen = import_space:get(citizen_id)
     -- collecting and inserting relatives data
@@ -82,6 +84,10 @@ end
 
 function import.birthdays(import_id)
     local import_space = space_by_import_id(import_id)
+
+    if import_space == nil then
+        return nil
+    end
 
     local birth_data = {}
     for month = 1, 12 do
@@ -108,6 +114,10 @@ end
 
 function import.towns_ages(import_id)
     local import_space = space_by_import_id(import_id)
+
+    if import_space == nil then
+        return nil
+    end
 
     local cur_date = os.date("*t")
     
@@ -141,6 +151,10 @@ end
 function import.all(import_id)
     local import_space = space_by_import_id(import_id)
 
+    if import_space == nil then
+        return nil
+    end
+
     local import = {}
     
     for _, tuple in
@@ -160,14 +174,9 @@ local function init()
 
     box.schema.sequence.create('counter', { min = 0, start = 0 })
 
-    rawset(_G, 'import_create',                import.create)
-    rawset(_G, 'import_update_citizens',       import.update_citizens)
-    rawset(_G, 'import_all',                   import.all)
-    rawset(_G, 'import_check',                 import.check)
-    rawset(_G, 'import_citizen_with_relative', import.citizen_with_relative)
-    rawset(_G, 'import_birthdays',             import.birthdays)
-    rawset(_G, 'import_towns_ages',            import.towns_ages)
-
+    for name, func in pairs(import) do
+        rawset(_G, 'import_' .. name, func)        
+    end
 end
 
 box.cfg {

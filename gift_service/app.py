@@ -20,17 +20,18 @@ def tarantool_call(function_name, *args):
     logging.debug('data')
     logging.debug(data)
 
+    if data is None:
+        raise falcon.HTTPBadRequest('Import not found.')
+
+
+
     return data
 
 
 class Import():
     def on_post(self, req, resp):
         posted_data = req.context['request']
-        if not posted_data or not isinstance(posted_data, dict) or \
-                posted_data.get('citizens') is None:
-            resp.status = falcon.HTTP_400
-            return
-        valid, msg = utils.validate(posted_data['citizens'])
+        valid, msg = utils.validate(posted_data)
 
         if not valid:
             resp.status = falcon.HTTP_400
@@ -46,7 +47,6 @@ class Import():
         }
 
     def on_get(self, req, resp, import_id):
-        #TODO: if import dont exist - 400: bad request
         raw_citizens = tarantool_call('import_all', import_id)
 
         form_citizens = []
@@ -92,6 +92,7 @@ class Import():
             import_id,
             data)
 
+        
         resp.status = falcon.HTTP_200
         resp.context['response'] = utils.format_citizen(updated_citizen)
 

@@ -56,6 +56,9 @@ def date_validate(s):
 
 
 def citizen_validate(citizen, update=False):
+    if not isinstance(citizen, dict) or len(citizen) == 0:
+        return False
+
     for name, options in schema.items():
         if citizen.get(name) is None:
             if not update:
@@ -85,6 +88,9 @@ def validate(data):
     return:
     result -> tuple(status -> boolean, message -> str)
     """
+    if not isinstance(data, dict) or not data.get('citizens'):
+        return False, 'invalid JSON'
+    data = data.get('citizens')
 
     # check json structure
     if not isinstance(data, list):

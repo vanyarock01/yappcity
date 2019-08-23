@@ -31,3 +31,9 @@ def test_post_get(import_data):
 
     resp_data = json.loads(resp_get.text)
     assert helper.sample_equivalent(resp_data['data'], import_data)
+
+
+def test_get_nonexistent():
+    resp_get = requests.get(
+        f'{host}/imports/12345678/citizens', timeout=10.0)
+    assert resp_get.status_code == 400
