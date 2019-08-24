@@ -197,16 +197,17 @@ def relative_data_shaper(citizen_id, cur_relatives, new_relatives, relatives_pac
 
     for citizen in relatives_pack:
         i = get_field(citizen, 'citizen_id')
+        relatives = get_field(citizen, 'relatives')
         if i in remove:
-            get_field(citizen, 'relatives').remove(citizen_id)
-            new_relatives = get_field(citizen, 'relatives')
+            if citizen_id in relatives:
+                relatives.remove(citizen_id)
         elif i in insert:
-            get_field(citizen, 'relatives').append(citizen_id)
-            new_relatives = get_field(citizen, 'relatives')
+            if not citizen_id in relatives:
+                relatives.append(citizen_id)
         else:
             continue
         update_data.append(
-            (i, [('=', get_pos('relatives') + 1, new_relatives)]))
+            (i, [('=', get_pos('relatives') + 1, relatives)]))
 
     return update_data
 

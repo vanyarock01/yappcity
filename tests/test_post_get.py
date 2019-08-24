@@ -9,7 +9,7 @@ host = 'http://localhost:8000'
 
 @pytest.fixture
 def import_data():
-    return sample.create(100)
+    return sample.create(10000)
 
 
 def test_post_get(import_data):

@@ -1,6 +1,7 @@
 import pytest
 import requests
 import json
+import sample
 import helper
 
 host = 'http://localhost:8000'
@@ -142,3 +143,33 @@ def test_patch(post_data):
 
     assert helper.sample_equivalent(
         json.loads(resp_get.text)['data'], excepted_sample) == True, 'compare all sample with excepted'
+
+@pytest.fixture
+def big_post_data():
+    return sample.create(10000)
+
+def test_patch_all_relatives_timeout(big_post_data):
+    resp_post = requests.post(
+        f'{host}/imports', data=json.dumps({
+            'citizens': big_post_data
+        }), timeout=10.0)
+
+    assert resp_post.status_code == 201
+
+    import_id = json.loads(resp_post.text)['data']['import_id']
+
+    # update citizen: add to relative all other citizen
+    patch_data = {
+        'relatives': []
+    }
+
+    i = len(big_post_data) - 1
+    for k in range(i):
+        patch_data['relatives'].append(k)
+
+    resp_patch = requests.patch(
+        f'{host}/imports/{import_id}/citizens/{i}',
+        data=json.dumps(patch_data), timeout=10)
+
+    assert resp_patch.status_code == 200
+
