@@ -60,22 +60,21 @@ def citizen_validate(citizen, update=False):
         return False
 
     for name, options in schema.items():
-        if citizen.get(name) is None:
+
+        field_value = citizen.get(name)
+        field_type = type(field_value)
+
+        if field_value is None:
             if not update:
                 return False
         else:
-            if update and options.get('primary') == True:
-                return False
-            elif name == 'relatives' and \
-                    not all(isinstance(n, int) for n in citizen.get('relatives')):
-                return False
-            elif name == 'birth_date' and \
-                    not date_validate(citizen.get('birth_date')):
-                return False
-            elif name == 'gender' and \
-                    citizen.get('gender') not in options['values']:
-                return False
-            elif not isinstance(citizen.get(name), options['type']):
+            if update and options.get('primary') == True or \
+                    name == 'relatives' and not field_type is list or \
+                    name == 'relatives' and not all(isinstance(n, int) for n in field_value) or \
+                    name == 'birth_date' and not date_validate(field_value) or \
+                    name == 'gender' and field_value not in options['values'] or \
+                    field_type is not options['type'] or \
+                    field_type is str and len(field_value) == 0:
                 return False
     return True
 
@@ -154,6 +153,7 @@ def diff(a, b):
 
 # increment in <position> it needed due to the fact that in lua arrays are numbered from 1
 
+
 def citizen_data_shaper(citizen_id, citizen_data):
     """addition of data for updating a citizen
     return:
@@ -165,13 +165,13 @@ def citizen_data_shaper(citizen_id, citizen_data):
 
     for name, value in citizen_data.items():
         pos = get_pos(name)
-        
+
         if name == 'birth_date':
             date = datetime.strptime(value, date_format)
             positions_values += [
                 ('=', pos + 1, date.day),
                 ('=', pos + 2, date.month),
-                ('=', pos + 3, date.year)                
+                ('=', pos + 3, date.year)
             ]
         else:
             positions_values.append(('=', pos + 1, value))
@@ -224,6 +224,7 @@ def format_citizen(raw):
         else:
             dict_citizen[name] = raw[options['order']]
     return dict_citizen
+
 
 def percentiles(data, p):
     result = {}

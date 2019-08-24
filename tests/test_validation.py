@@ -95,6 +95,12 @@ def invalid_data():
                 {'citizen_id': 1, 'street': 's', 'city': 's', 'building': 's', 'apartment': 1,
                  'name': 's', 'gender': 'female', 'relatives': [3], 'birth_date': future_date}
             ]}
+        ), (
+            'invalid name - empty string',
+            {'citizens': [
+                {'citizen_id': 1, 'street': 's', 'city': 's', 'building': 's', 'apartment': 1,
+                 'name': '', 'gender': 'female', 'relatives': [3], 'birth_date': '20.05.1992'}
+            ]}
         )
     ]
 
