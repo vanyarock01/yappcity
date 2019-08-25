@@ -1,0 +1,18 @@
+[Unit]
+Description=Gunicorn instance to serve the falcon application
+Requires=gift_storage.service
+After=network.target gift_storage.service
+
+[Service]
+User=entrant
+Group=www-data
+PIDFile=/tmp/gunicorn.pid
+Environment="PATH=/home/.local/bin"
+WorkingDirectory=/home/entrant/yappcity/gift_service/
+ExecStart=/home/entrant/.local/bin/gunicorn -w 9 -b 0.0.0.0:5000 --reload app:api
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

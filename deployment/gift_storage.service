@@ -1,0 +1,14 @@
+[Unit]
+Description=Tarantool instance to store data of gift service
+After=network.target
+
+[Service]
+User=entrant
+Group=www-data
+Type=forking
+WorkingDirectory=/home/entrant/yappcity/storage/
+ExecStart=/usr/local/bin/tarantool /home/entrant/yappcity/storage/storage.lua
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
