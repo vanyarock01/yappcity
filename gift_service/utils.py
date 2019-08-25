@@ -103,12 +103,12 @@ def validate(data):
         if relatives.get(i) == None and citizen_validate(citizen):
             relatives[i] = citizen['relatives']
         else:
-            return False, f'invalid citizen format id {str(i)}'
+            return False, 'invalid citizen format id {}'.format(str(i))
     # check relatives
     for i, rel in relatives.items():
         for r in rel:
             if i not in relatives[r]:
-                return False, f'invalid relatives: citzen {i} not in relatives citzen {r}'
+                return False, 'invalid relatives: citzen {} not in relatives citzen {}'.format(i, r)
     return True, 'ok'
 
 

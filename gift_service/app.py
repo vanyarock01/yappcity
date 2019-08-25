@@ -14,16 +14,8 @@ def tarantool_call(function_name, *args):
     # and in the list (why didn’t I find out so)
     data = connection.call(function_name, args).data[0]
 
-    logging.debug(f"TARANTOOL call, function={function_name}")
-    logging.debug('args')
-    logging.debug(args)
-    logging.debug('data')
-    logging.debug(data)
-
     if data is None:
         raise falcon.HTTPBadRequest('Import not found.')
-
-
 
     return data
 
@@ -99,7 +91,6 @@ class Import():
 
 class ImportBirthdays():
     def on_get(self, req, resp, import_id):
-        #TODO: if import dont exist - 400: bad request
         raw_birtdays = tarantool_call('import_birthdays', import_id)
 
         # format data
@@ -122,7 +113,6 @@ class ImportBirthdays():
 
 class ImportTownsAges():
     def on_get(self, req, resp, import_id):
-        #TODO: if import dont exist - 400: bad request
         towns_stat = tarantool_call('import_towns_ages', import_id)
 
         towns_percentiles = []

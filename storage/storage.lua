@@ -18,8 +18,6 @@ end
 
 local import = {}
 
-
-
 function import.create(data)
     local id = box.sequence.counter:next()
     local space_name = tostring(id)
@@ -42,12 +40,13 @@ end
 
 function import.update_citizens(import_id, citizen_pack)
     -- return info about first citizen
+
     local import_space = space_by_import_id(import_id)
-    
+
     if import_space == nil then
         return nil
     end
-
+    
     local citizen = citizen_pack[1]
     local updated_citizen = import_space:update(citizen[1], citizen[2])
     -- update relative citizens, if exist
@@ -172,8 +171,10 @@ local function init()
             'universe',
             nil, { if_not_exists = true })
 
-    box.schema.sequence.create('counter', { min = 0, start = 0 })
-
+    if box.sequence.counter == nil then
+        box.schema.sequence.create('counter', { min = 0, start = 0 })
+    end
+    
     for name, func in pairs(import) do
         rawset(_G, 'import_' .. name, func)        
     end

@@ -3,7 +3,7 @@ local config = {
     listen = 3331,
     log_format = 'plain',
     log_file = 'app.log',
-    back = false,
+    back = true,
     pid = 'app.pid'
 }
 
