@@ -73,7 +73,3 @@ def create(k=1000):
 
     return citizens
 
-
-with open('sample.json', 'w') as f:
-    f.write(json.dumps(create()))
-

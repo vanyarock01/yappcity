@@ -1,11 +1,15 @@
 from datetime import datetime, date
 import numpy as np
+import collections
 
 host = 'http://localhost:8080'
 
+def relatives_equivalent(x, y):
+    return collections.Counter(x) == collections.Counter(y)
+
 def citizen_equivalent(x, y):
     for k, v in x.items():
-        if k == 'relatives' and set(v) != set(y[k]):
+        if k == 'relatives' and not relatives_equivalent(v, y[k]):
             return False
         elif v != y[k]:
             return False
