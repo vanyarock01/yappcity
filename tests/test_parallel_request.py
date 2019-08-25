@@ -6,11 +6,9 @@ import helper
 import threading
 
 
-host = 'http://localhost:8000'
-
 def background_post_get(import_data):
     resp_post = requests.post(
-        f'{host}/imports', data=json.dumps({
+        f'{helper.host}/imports', data=json.dumps({
             'citizens': import_data
         }), timeout=10.0)
 
@@ -20,7 +18,7 @@ def background_post_get(import_data):
     assert isinstance(import_id, int) == True
 
     resp_get = requests.get(
-        f'{host}/imports/{import_id}/citizens', timeout=10.0)
+        f'{helper.host}/imports/{import_id}/citizens', timeout=10.0)
     assert resp_get.status_code == 200
 
     resp_data = json.loads(resp_get.text)
@@ -47,7 +45,7 @@ def test_post_get():
 def background_patch(import_id, data_pack):
     for i, data in data_pack:
         resp_patch = requests.patch(
-            f'{host}/imports/{import_id}/citizens/{i}',
+            f'{helper.host}/imports/{import_id}/citizens/{i}',
             data=json.dumps(data), timeout=10)
         assert resp_patch.status_code == 200
 
@@ -57,7 +55,7 @@ def test_patch():
     data = sample.create(k)
 
     resp_post = requests.post(
-        f'{host}/imports', data=json.dumps({
+        f'{helper.host}/imports', data=json.dumps({
             'citizens': data
         }), timeout=10.0)
 
@@ -92,7 +90,7 @@ def test_patch():
         tread.join()
     
     resp_get = requests.get(
-        f'{host}/imports/{import_id}/citizens', timeout=10.0)
+        f'{helper.host}/imports/{import_id}/citizens', timeout=10.0)
 
     assert resp_get.status_code == 200
 

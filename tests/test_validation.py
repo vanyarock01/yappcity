@@ -1,9 +1,9 @@
 import pytest
 import requests
 import json
+import helper
 from datetime import date
 
-host = 'http://localhost:8000'
 
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def valid_data():
 def test_valid(valid_data):
     for msg, data in valid_data:
         resp_get = requests.post(
-            f'{host}/imports', data=json.dumps(data), timeout=10)
+            f'{helper.host}/imports', data=json.dumps(data), timeout=10)
         assert resp_get.status_code == 201, msg
 
 
@@ -108,5 +108,5 @@ def invalid_data():
 def test_invalid(invalid_data):
     for msg, data in invalid_data:
         resp_get = requests.post(
-            f'{host}/imports', data=json.dumps(data), timeout=10)
+            f'{helper.host}/imports', data=json.dumps(data), timeout=10)
         assert resp_get.status_code == 400, msg

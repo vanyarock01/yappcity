@@ -4,8 +4,6 @@ import json
 import sample
 import helper
 
-host = 'http://localhost:8000'
-
 
 @pytest.fixture
 def import_data():
@@ -15,7 +13,7 @@ def import_data():
 def test_post_get(import_data):
     # try POST data
     resp_post = requests.post(
-        f'{host}/imports', data=json.dumps({
+        f'{helper.host}/imports', data=json.dumps({
             'citizens': import_data
         }), timeout=10.0)
 
@@ -26,7 +24,7 @@ def test_post_get(import_data):
 
     # try GET data
     resp_get = requests.get(
-        f'{host}/imports/{import_id}/citizens', timeout=10.0)
+        f'{helper.host}/imports/{import_id}/citizens', timeout=10.0)
     assert resp_get.status_code == 200
 
     resp_data = json.loads(resp_get.text)
@@ -35,5 +33,5 @@ def test_post_get(import_data):
 
 def test_get_nonexistent():
     resp_get = requests.get(
-        f'{host}/imports/12345678/citizens', timeout=10.0)
+        f'{helper.host}/imports/12345678/citizens', timeout=10.0)
     assert resp_get.status_code == 400

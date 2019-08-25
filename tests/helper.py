@@ -1,6 +1,7 @@
 from datetime import datetime, date
 import numpy as np
 
+host = 'http://localhost:8080'
 
 def citizen_equivalent(x, y):
     for k, v in x.items():

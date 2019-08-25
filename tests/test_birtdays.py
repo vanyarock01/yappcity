@@ -3,8 +3,6 @@ import requests
 import json
 import helper
 
-host = 'http://localhost:8000'
-
 
 @pytest.fixture(scope="module")
 def post_data():
@@ -75,7 +73,7 @@ def post_data():
         citizen['name'] = 'name'
         citizen['gender'] = 'female'
 
-    resp_post = requests.post(f'{host}/imports', data=json.dumps(data), timeout=10)
+    resp_post = requests.post(f'{helper.host}/imports', data=json.dumps(data), timeout=10)
     assert resp_post.status_code == 201
     return json.loads(resp_post.text)['data']
 
@@ -116,7 +114,7 @@ def test_birthdays(post_data):
     }
 
     import_id = post_data['import_id']
-    resp_get = requests.get(f'{host}/imports/{import_id}/citizens/birthdays', timeout=10)
+    resp_get = requests.get(f'{helper.host}/imports/{import_id}/citizens/birthdays', timeout=10)
     assert resp_get.status_code == 200
     birtdays = json.loads(resp_get.text)['data']
     for month, data in birtdays.items():

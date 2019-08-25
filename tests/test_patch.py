@@ -4,13 +4,11 @@ import json
 import sample
 import helper
 
-host = 'http://localhost:8000'
-
 
 @pytest.fixture(scope="module")
 def post_data():
     resp_post = requests.post(
-        f'{host}/imports',
+        f'{helper.host}/imports',
         data=json.dumps(
             {'citizens': [
                 {'citizen_id': 1, 'street': 'n', 'town': 'm', 'building': 'n', 'apartment': 1,
@@ -34,7 +32,7 @@ def test_invalid(post_data):
         'apartment': 1,
     }
     resp_patch = requests.patch(
-        f'{host}/imports/{post_data["import_id"]}/citizens/1',
+        f'{helper.host}/imports/{post_data["import_id"]}/citizens/1',
         data=json.dumps(invalid_data), timeout=10)
 
     assert resp_patch.status_code == 400, 'try change citizen_id field'
@@ -49,7 +47,7 @@ def test_patch(post_data):
         'apartment': 2
     }
     resp_patch = requests.patch(
-        f'{host}/imports/{post_data["import_id"]}/citizens/1',
+        f'{helper.host}/imports/{post_data["import_id"]}/citizens/1',
         data=json.dumps(patch_data), timeout=10)
 
     assert resp_patch.status_code == 200, 'patch 1 citizen'
@@ -75,7 +73,7 @@ def test_patch(post_data):
     }
 
     resp_patch = requests.patch(
-        f'{host}/imports/{post_data["import_id"]}/citizens/3',
+        f'{helper.host}/imports/{post_data["import_id"]}/citizens/3',
         data=json.dumps(insert_relatives), timeout=10)
     assert resp_patch.status_code == 200, 'add citizen with id == 2 to relatives citizen with id == 3'
 
@@ -98,7 +96,7 @@ def test_patch(post_data):
     }
 
     resp_patch = requests.patch(
-        f'{host}/imports/{post_data["import_id"]}/citizens/4',
+        f'{helper.host}/imports/{post_data["import_id"]}/citizens/4',
         data=json.dumps(remove_relatives), timeout=10)
     assert resp_patch.status_code == 200, 'remove citizen with id == 2 to relatives citizen with id == 4'
 
@@ -119,7 +117,7 @@ def test_patch(post_data):
     # compare all sample with excepted
 
     resp_get = requests.get(
-        f'{host}/imports/{post_data["import_id"]}/citizens', timeout=10)
+        f'{helper.host}/imports/{post_data["import_id"]}/citizens', timeout=10)
     assert resp_get.status_code == 200
 
     excepted_second = {
@@ -150,7 +148,7 @@ def big_post_data():
 
 def test_patch_all_relatives_timeout(big_post_data):
     resp_post = requests.post(
-        f'{host}/imports', data=json.dumps({
+        f'{helper.host}/imports', data=json.dumps({
             'citizens': big_post_data
         }), timeout=10.0)
 
@@ -168,7 +166,7 @@ def test_patch_all_relatives_timeout(big_post_data):
         patch_data['relatives'].append(k)
 
     resp_patch = requests.patch(
-        f'{host}/imports/{import_id}/citizens/{i}',
+        f'{helper.host}/imports/{import_id}/citizens/{i}',
         data=json.dumps(patch_data), timeout=10)
 
     assert resp_patch.status_code == 200
