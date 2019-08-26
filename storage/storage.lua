@@ -1,3 +1,5 @@
+#!/usr/bin/env tarantool
+
 local model = require('model')
 local conf = require('config')
 local log = require('log')

@@ -15,7 +15,7 @@ class JSONprocess:
                 'Empty request body. A valid JSON document is required.')
 
         try:
-            req.context['request'] = json.loads(body.decode('utf-8'))
+            req.context['request'] = json.loads(body)
         except:
             raise falcon.HTTPBadRequest(
                 'Malformed JSON. Could not decode the request body.')

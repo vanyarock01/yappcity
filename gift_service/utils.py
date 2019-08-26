@@ -59,6 +59,10 @@ def citizen_validate(citizen, update=False):
     if not isinstance(citizen, dict) or len(citizen) == 0:
         return False
 
+    for key, _ in citizen.items():
+        if schema.get(key) == None:
+            return False
+
     for name, options in schema.items():
 
         field_value = citizen.get(name)
@@ -74,7 +78,7 @@ def citizen_validate(citizen, update=False):
                     name == 'birth_date' and not date_validate(field_value) or \
                     name == 'gender' and field_value not in options['values'] or \
                     field_type is not options['type'] or \
-                    field_type is str and len(field_value) == 0:
+                    field_type is str and ( len(field_value) == 0 or len(field_value) ) > 256:
                 return False
     return True
 
@@ -107,7 +111,7 @@ def validate(data):
     # check relatives
     for i, rel in relatives.items():
         for r in rel:
-            if i not in relatives[r]:
+            if relatives.get(r) == None or i not in relatives.get(r):
                 return False, 'invalid relatives: citzen {} not in relatives citzen {}'.format(i, r)
     return True, 'ok'
 

@@ -10,10 +10,8 @@ logging.basicConfig(filename='app.log', level=logging.DEBUG)
 
 
 def tarantool_call(function_name, *args):
-    # the connection.call puts the result in the "data" field
-    # and in the list (why didn’t I find out so)
     data = connection.call(function_name, args).data[0]
-
+    logging.info(function_name)
     if data is None:
         raise falcon.HTTPBadRequest('Import not found.')
 
